@@ -11,7 +11,7 @@ fn read_file(filename: &str) -> Vec<u32> {
     let mut cal_vec: Vec<u32> = Vec::new();
     for line in reader.lines() {
         let line = line.unwrap();
-        if line.len() > 0 {
+        if !line.is_empty() {
             cal += line.parse::<u32>().unwrap();
         } else {
             cal_vec.push(cal);
@@ -28,13 +28,8 @@ fn part1() {
 
 fn part2() {
     let mut cal_vec = read_file("input.txt");
-    let mut top_three: Vec<u32> = Vec::new();
-    for _ in 0..3 {
-        top_three.push(cal_vec.iter().max().unwrap().clone());
-        cal_vec.retain(|&x| x != *top_three.last().unwrap());
-    }
-
-    println!("Part 2: {}, {:?}", top_three.iter().sum::<u32>(), top_three);
+    cal_vec.sort();
+    println!("Part 2: {}", cal_vec.iter().rev().take(3).sum::<u32>());
 }
 
 fn main() {
