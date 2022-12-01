@@ -26,6 +26,18 @@ fn part1() {
     println!("Part 1: {}", read_file("input.txt").iter().max().unwrap());
 }
 
+fn part2() {
+    let mut cal_vec = read_file("input.txt");
+    let mut top_three: Vec<u32> = Vec::new();
+    for _ in 0..3 {
+        top_three.push(cal_vec.iter().max().unwrap().clone());
+        cal_vec.retain(|&x| x != *top_three.last().unwrap());
+    }
+
+    println!("Part 2: {}, {:?}", top_three.iter().sum::<u32>(), top_three);
+}
+
 fn main() {
     part1();
+    part2();
 }
