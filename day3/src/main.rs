@@ -20,33 +20,38 @@ fn read_input(filename: &str) -> Vec<Vec<u32>> {
 }
 
 fn part1() {
-    let res: u32 = read_input("input.txt").iter().fold(0, |acc, v| {
-        let t = v.split_at(v.len() / 2);
-        let (x, y) = (
-            t.0.iter().cloned().collect::<HashSet<_>>(),
-            t.1.iter().cloned().collect::<HashSet<_>>(),
-        );
-
-        acc + x.intersection(&y).sum::<u32>()
-    });
+    let res: u32 = read_input("input.txt")
+        .iter()
+        .map(|v| v.split_at(v.len() / 2))
+        .map(|t| {
+            (
+                t.0.iter().cloned().collect::<HashSet<_>>(),
+                t.1.iter().cloned().collect::<HashSet<_>>(),
+            )
+        })
+        .fold(0, |acc, (x, y)| acc + x.intersection(&y).sum::<u32>());
 
     println!("Part 1: {}", res);
 }
 
 fn part2() {
-    let res = read_input("input.txt").chunks(3).fold(0, |acc, v| {
-        let (x, y, z) = (
-            v[0].iter().cloned().collect::<HashSet<_>>(),
-            v[1].iter().cloned().collect::<HashSet<_>>(),
-            v[2].iter().cloned().collect::<HashSet<_>>(),
-        );
-        acc + x
-            .intersection(&y)
-            .cloned()
-            .collect::<HashSet<_>>()
-            .intersection(&z)
-            .sum::<u32>()
-    });
+    let res = read_input("input.txt")
+        .chunks(3)
+        .map(|v| {
+            (
+                v[0].iter().cloned().collect::<HashSet<_>>(),
+                v[1].iter().cloned().collect::<HashSet<_>>(),
+                v[2].iter().cloned().collect::<HashSet<_>>(),
+            )
+        })
+        .fold(0, |acc, (x, y, z)| {
+            acc + x
+                .intersection(&y)
+                .cloned()
+                .collect::<HashSet<_>>()
+                .intersection(&z)
+                .sum::<u32>()
+        });
 
     println!("Part 2: {}", res);
 }
