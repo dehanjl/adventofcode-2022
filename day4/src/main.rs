@@ -4,19 +4,18 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-fn read_input(filename: &str) -> Vec<HashSet<u32>> {
+fn read_input(filename: &str) -> Vec<(HashSet<u32>, HashSet<u32>)> {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
 
     reader
         .lines()
-        .map(|line| {
+        .flat_map(|line| {
             line.unwrap()
                 .split(',')
                 .map(|v| v.to_owned())
                 .collect::<Vec<_>>()
         })
-        .flat_map(|s| s)
         .map(|s| {
             s.split('-')
                 .map(|s| s.parse::<u32>().unwrap())
@@ -25,53 +24,30 @@ fn read_input(filename: &str) -> Vec<HashSet<u32>> {
         .map(|v| (v[0], v[1]))
         .map(|(r, f)| (r..=f).collect::<HashSet<_>>())
         .collect::<Vec<_>>()
+        .chunks(2)
+        .map(|chunk| (chunk[0].clone(), chunk[1].clone()))
+        .collect()
 }
 
 fn part1() {
-    let sets = read_input("input.txt");
-    let pairs = sets
-        .chunks(2)
-        .map(|s| {
-            let mut s = s.iter();
-            let a = s.next().cloned().unwrap();
-            let b = s.next().cloned().unwrap();
-            (a, b)
-        })
-        .collect::<Vec<_>>();
-
-    let mut sum = 0;
-
-    pairs.iter().for_each(|(x, y)| {
+    let sum = read_input("input.txt").iter().fold(0, |acc, (x, y)| {
         let i = x.intersection(y).collect::<Vec<_>>();
-        // println!("{:?}", i);
         if i.len() == x.len() || i.len() == y.len() {
-            sum += 1;
+            return acc + 1;
         }
+        acc
     });
 
     println!("Part 1: {}", sum);
 }
 
 fn part2() {
-    let sets = read_input("input.txt");
-    let pairs = sets
-        .chunks(2)
-        .map(|s| {
-            let mut s = s.iter();
-            let a = s.next().cloned().unwrap();
-            let b = s.next().cloned().unwrap();
-            (a, b)
-        })
-        .collect::<Vec<_>>();
-
-    let mut sum = 0;
-
-    pairs.iter().for_each(|(x, y)| {
+    let sum = read_input("input.txt").iter().fold(0, |acc, (x, y)| {
         let i = x.intersection(y).collect::<Vec<_>>();
-        // println!("{:?}", i);
         if i.len() > 0 {
-            sum += 1;
+            return acc + 1;
         }
+        acc
     });
 
     println!("Part 2: {}", sum);
