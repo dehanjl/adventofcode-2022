@@ -1,98 +1,76 @@
+use itertools::Itertools;
 use scan_fmt::scan_fmt;
-use std::fs;
+use std::{collections::HashMap, fs};
 
-fn example_stacks() -> Vec<Vec<char>> {
-    /*
-        [D]
-    [N] [C]
-    [Z] [M] [P]
-     1   2   3
-    */
-    vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']]
-}
+fn read_input(filename: &str) -> (HashMap<usize, Vec<char>>, Vec<(u32, usize, usize)>) {
+    let input = fs::read_to_string(filename).unwrap();
 
-fn input_stacks() -> Vec<Vec<char>> {
-    /*
-            [G]         [D]     [Q]
-    [P]     [T]         [L] [M] [Z]
-    [Z] [Z] [C]         [Z] [G] [W]
-    [M] [B] [F]         [P] [C] [H] [N]
-    [T] [S] [R]     [H] [W] [R] [L] [W]
-    [R] [T] [Q] [Z] [R] [S] [Z] [F] [P]
-    [C] [N] [H] [R] [N] [H] [D] [J] [Q]
-    [N] [D] [M] [G] [Z] [F] [W] [S] [S]
-    1   2   3   4   5   6   7   8   9
-    */
-    vec![
-        vec!['N', 'C', 'R', 'T', 'M', 'Z', 'P'],
-        vec!['D', 'N', 'T', 'S', 'B', 'Z'],
-        vec!['M', 'H', 'Q', 'R', 'F', 'C', 'T', 'G'],
-        vec!['G', 'R', 'Z'],
-        vec!['Z', 'N', 'R', 'H'],
-        vec!['F', 'H', 'S', 'W', 'P', 'Z', 'L', 'D'],
-        vec!['W', 'D', 'Z', 'R', 'C', 'G', 'M'],
-        vec!['S', 'J', 'F', 'L', 'H', 'W', 'Z', 'Q'],
-        vec!['S', 'Q', 'P', 'W', 'N'],
-    ]
-}
-
-fn read_moves(filename: &str) -> Vec<(u32, usize, usize)> {
-    fs::read_to_string(filename)
-        .expect("Failed to read input.txt")
+    let moves = input
         .lines()
+        .filter(|&l| l.starts_with("move"))
         .map(|line| {
-            let res = scan_fmt!(line, "move {d} from {d} to {d}", u32, usize, usize);
-            let (a, b, c) = res.unwrap();
-            (a, b - 1, c - 1)
+            let (qty, src, dst) =
+                scan_fmt!(&line, "move {d} from {d} to {d}", u32, usize, usize).unwrap();
+            (qty, src - 1, dst - 1)
         })
-        .collect()
+        .collect();
+
+    let mut stacks = input
+        .lines()
+        .take_while(|&l| !l.starts_with("move"))
+        .flat_map(|l| {
+            l.chars()
+                .skip(1)
+                .step_by(4)
+                .enumerate()
+                .filter(|&(_, c)| c.is_alphabetic())
+        })
+        .into_group_map();
+
+    stacks.iter_mut().for_each(|(_, v)| v.reverse());
+
+    (stacks, moves)
 }
 
-fn part1() {
-    // let mut stacks = example_stacks();
-    // let moves = read_moves("input_example.txt");
-    let mut stacks = input_stacks();
-    let moves = read_moves("input.txt");
+fn part1(filename: &str) {
+    let (mut stacks, moves) = read_input(filename);
 
-    // println!("Stacks: {:?}", stacks);
-    for (qty, src, dst) in moves {
-        for _ in 0..qty {
-            let cr = stacks[src].pop().unwrap();
-            stacks[dst].push(cr);
-        }
-        // println!("Stacks: {:?}", stacks);
-    }
+    moves.iter().for_each(|(qty, src, dst)| {
+        (0..*qty).for_each(|_| {
+            let cat = stacks.get_mut(src).unwrap().pop().unwrap();
+            stacks.get_mut(dst).unwrap().push(cat)
+        });
+    });
 
-    println!("Part 1: ");
-    for s in stacks {
-        print!("{}", s.last().unwrap());
+    print!("Part 1: ");
+    for i in 0..stacks.len() {
+        print!("{}", stacks[&i].last().unwrap());
     }
-    println!();
+    println!()
 }
 
-fn part2() {
-    // let mut stacks = example_stacks();
-    // let moves = read_moves("input_example.txt");
-    let mut stacks = input_stacks();
-    let moves = read_moves("input.txt");
+fn part2(filename: &str) {
+    let (mut stacks, moves) = read_input(filename);
 
-    // println!("Stacks: {:?}", stacks);
-    for (qty, src, dst) in moves {
+    moves.iter().for_each(|(qty, src, dst)| {
         let l = stacks[src].len();
-        let x: Vec<char> = stacks[src].drain(l - qty as usize..).collect();
-        stacks[dst].extend(x);
-        // println!("Stacks: {:?}", stacks);
-    }
+        let x: Vec<char> = stacks
+            .get_mut(src)
+            .unwrap()
+            .drain(l - *qty as usize..)
+            .collect();
+        stacks.get_mut(dst).unwrap().extend(x);
+    });
 
-    println!("Part 2: ");
-    for s in stacks {
-        print!("{}", s.last().unwrap());
+    print!("Part 2: ");
+    for i in 0..stacks.len() {
+        print!("{}", stacks[&i].last().unwrap());
     }
-    println!();
+    println!()
 }
 
 fn main() {
-    // part1();
-    part2();
-    println!("Hello, world!");
+    let filename = "input.txt";
+    part1(filename);
+    part2(filename);
 }
