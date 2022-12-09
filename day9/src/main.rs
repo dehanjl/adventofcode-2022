@@ -9,7 +9,6 @@ type Loc = (i32, i32);
 
 trait LocUtils {
     fn is_adjacent(&self, other: &Loc) -> bool;
-    fn is_inline(&self, other: &Loc) -> bool;
     fn move_self(&mut self, dir: char);
     fn follow(&mut self, other: &Loc);
 }
@@ -17,10 +16,6 @@ trait LocUtils {
 impl LocUtils for Loc {
     fn is_adjacent(&self, other: &Loc) -> bool {
         (self.0 - other.0).abs() <= 1 && (self.1 - other.1).abs() <= 1
-    }
-
-    fn is_inline(&self, other: &Loc) -> bool {
-        self.0 == other.0 || self.1 == other.1
     }
 
     fn move_self(&mut self, dir: char) {
@@ -47,36 +42,16 @@ fn read_file(filename: &str) -> Vec<Instruction> {
         .collect::<Vec<Instruction>>()
 }
 
-fn part1() {
-    let mut head: Loc = (0, 0);
-    let mut tail: Loc = (0, 0);
+fn simulate(instructions: &Vec<Instruction>, size: usize) -> HashSet<Loc> {
+    let mut rope: Vec<Loc> = vec![(0, 0); size];
     let mut visited: HashSet<Loc> = HashSet::new();
 
-    read_file("input.txt").iter().for_each(|(dir, amt)| {
-        for _ in 0..*amt {
-            head.move_self(*dir);
-
-            if !head.is_adjacent(&tail) {
-                tail.follow(&head);
-            }
-
-            visited.insert(tail);
-        }
-    });
-
-    println!("Part 1: {}", visited.len());
-}
-
-fn part2() {
-    let mut rope: Vec<Loc> = vec![(0, 0); 10];
-    let mut visited: HashSet<Loc> = HashSet::new();
-
-    read_file("input.txt").iter().for_each(|(dir, amt)| {
+    for (dir, amt) in instructions {
         for _ in 0..*amt {
             rope[0].move_self(*dir);
 
             for i in 1..rope.len() {
-                let (follower, leader) = (rope[i].clone(), rope[i - 1].clone());
+                let (follower, leader) = (rope[i], rope[i - 1]);
                 if !leader.is_adjacent(&follower) {
                     rope[i].follow(&leader);
                 }
@@ -84,9 +59,17 @@ fn part2() {
 
             visited.insert(rope[rope.len() - 1]);
         }
-    });
+    }
 
-    println!("Part 2: {}", visited.len());
+    visited
+}
+
+fn part1() {
+    println!("Part 1: {}", simulate(&read_file("input.txt"), 2).len());
+}
+
+fn part2() {
+    println!("Part 2: {}", simulate(&read_file("input.txt"), 10).len());
 }
 
 fn main() {
