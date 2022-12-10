@@ -65,8 +65,6 @@ fn part2() {
             }
         });
 
-    pixels.resize(6 * 40, '.');
-
     pixels
         .chunks(40)
         .for_each(|row| println!("{:?}", row.iter().collect::<String>()));
