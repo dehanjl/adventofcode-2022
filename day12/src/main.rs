@@ -108,7 +108,29 @@ fn part1() {
     println!("Part 1: {}", a_star(&heightmap, start, end));
 }
 
-fn part2() {}
+fn part2() {
+    let (heightmap, _, end) = read_file("input.txt");
+    let mut starts: Vec<Loc> = Vec::new();
+
+    for (y, row) in heightmap.iter().enumerate() {
+        for (x, height) in row.iter().enumerate() {
+            if *height == 0 {
+                starts.push(Loc {
+                    x: x as i32,
+                    y: y as i32,
+                });
+            }
+        }
+    }
+
+    let min = starts
+        .iter()
+        .map(|&start| a_star(&heightmap, start, end))
+        .min()
+        .unwrap();
+
+    println!("Part 2: {:?}", min);
+}
 
 fn main() {
     part1();
