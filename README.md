@@ -1,5 +1,5 @@
 # Advent of Code 2022
-A (mostly) Rust solution to the [Advent of Code](https://adventofcode.com/) puzzles for 2022.
+A (mostly) Rust 🦀 set of solutios to the [Advent of Code](https://adventofcode.com/) puzzles for 2022.
 
 ## Instructions
 Run a day using `cargo run --bin <day>` where `<day>` is the day to run. 
