@@ -67,7 +67,7 @@ fn read_file(filename: &str) -> (HeightMap, Loc, Loc) {
     (heightmap, start, end)
 }
 
-fn a_star(heightmap: &HeightMap, start: Loc, end: Loc) -> i32 {
+fn a_star(heightmap: &HeightMap, start: Loc, end: Loc, flag: bool) -> i32 {
     /// Manhattan distance heuristic function.
     /// Because we can't step diagonally, this is admissable.
     fn h(loc: &Loc, end: &Loc) -> i32 {
@@ -91,7 +91,13 @@ fn a_star(heightmap: &HeightMap, start: Loc, end: Loc) -> i32 {
         }
 
         for neighbor in current.find_neighbors(&heightmap) {
-            let tentative_g_score = g_scores[&current] + 1;
+            let tentative_g_score =
+                if flag && heightmap[neighbor.y as usize][neighbor.x as usize] == 0 {
+                    0 // when going to a tile with 0 elevation, we can assume we start there
+                } else {
+                    g_scores[&current] + 1
+                };
+
             if tentative_g_score < *g_scores.get(&neighbor).unwrap_or(&MAX) {
                 g_scores.insert(neighbor, tentative_g_score);
                 f_scores.insert(neighbor, tentative_g_score + h(&neighbor, &end));
@@ -105,31 +111,12 @@ fn a_star(heightmap: &HeightMap, start: Loc, end: Loc) -> i32 {
 
 fn part1() {
     let (heightmap, start, end) = read_file("input.txt");
-    println!("Part 1: {}", a_star(&heightmap, start, end));
+    println!("Part 1: {}", a_star(&heightmap, start, end, false));
 }
 
 fn part2() {
-    let (heightmap, _, end) = read_file("input.txt");
-    let mut starts: Vec<Loc> = Vec::new();
-
-    for (y, row) in heightmap.iter().enumerate() {
-        for (x, height) in row.iter().enumerate() {
-            if *height == 0 {
-                starts.push(Loc {
-                    x: x as i32,
-                    y: y as i32,
-                });
-            }
-        }
-    }
-
-    let min = starts
-        .iter()
-        .map(|&start| a_star(&heightmap, start, end))
-        .min()
-        .unwrap();
-
-    println!("Part 2: {:?}", min);
+    let (heightmap, start, end) = read_file("input.txt");
+    println!("Part 2: {:?}", a_star(&heightmap, start, end, true));
 }
 
 fn main() {
