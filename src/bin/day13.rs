@@ -67,6 +67,6 @@ fn part2(input: &str) {
 }
 
 fn main() {
-    runner(part1, "inputs/real/day13.txt");
-    runner(part2, "inputs/real/day13.txt");
+    runner(part1);
+    runner(part2);
 }
