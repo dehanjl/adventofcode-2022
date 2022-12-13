@@ -45,14 +45,28 @@ fn part1(input: &str) {
         .map(|i| i + 1)
         .sum::<usize>();
 
-    println!("Part 1: {:?}", res);
+    println!("Day 13 Part 1: {:?}", res);
 }
 
 fn part2(input: &str) {
-    parse_input(input);
+    let markers = [
+        serde_json::from_str::<Value>("[[2]]").unwrap(),
+        serde_json::from_str::<Value>("[[6]]").unwrap(),
+    ];
+    let res = parse_input(input)
+        .iter()
+        .flat_map(|(a, b)| [a, b])
+        .chain(&markers)
+        .cloned()
+        .sorted_by(compare)
+        .positions(|packet| markers.contains(&packet))
+        .map(|i| i + 1)
+        .product::<usize>();
+
+    println!("Day 13 Part 2: {:?}", res);
 }
 
 fn main() {
     runner(part1, "inputs/real/day13.txt");
-    // runner(part2, "inputs/example/day13.txt");
+    runner(part2, "inputs/real/day13.txt");
 }
