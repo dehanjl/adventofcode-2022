@@ -1,5 +1,5 @@
 # Advent of Code 2022
-A (mostly) Rust 🦀 set of solutios to the [Advent of Code](https://adventofcode.com/) puzzles for 2022.
+A (mostly) Rust 🦀 set of solutions to the [Advent of Code](https://adventofcode.com/) puzzles for 2022.
 
 ## Instructions
 Run a day using `cargo run --bin <day>` where `<day>` is the day to run. 
@@ -20,3 +20,7 @@ Run a day using `cargo run --bin <day>` where `<day>` is the day to run.
     ├── lib.rs # helper library
     └── main.rs # main project binary, does nothing right now
 ```
+
+## Acknowledgements
+- For some genuinely impressive solutions: [@AxlLind](https://github.com/AxlLind/AdventOfCode2022)
+- Some more and pretty good solutions: [@jontmy](https://github.com/jontmy/aoc-rust)
