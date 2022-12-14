@@ -17,8 +17,8 @@ fn draw_path(cavern: &mut Cavern, path: &Path, x_offset: usize) {
     }
 }
 
-fn parse_input(input: &str) -> (Cavern, usize) {
-    let paths: Vec<Path> = input
+fn parse_input(input: &str, add_floor: bool) -> (Cavern, usize) {
+    let mut paths: Vec<Path> = input
         .lines()
         .map(|line| {
             line.split("->")
@@ -27,6 +27,19 @@ fn parse_input(input: &str) -> (Cavern, usize) {
                 .collect()
         })
         .collect();
+
+    let mut y_max = paths
+        .iter()
+        .flat_map(|it| it.iter().map(|(_, y)| *y))
+        .max()
+        .unwrap();
+
+    if add_floor {
+        y_max += 2;
+        let floor_start = (500 - y_max, y_max);
+        let floor_stop = (500 + y_max, y_max);
+        paths.push(vec![floor_start, floor_stop]);
+    }
 
     let x_max = paths
         .iter()
@@ -38,12 +51,6 @@ fn parse_input(input: &str) -> (Cavern, usize) {
         .iter()
         .flat_map(|it| it.iter().map(|(x, _)| *x))
         .min()
-        .unwrap();
-
-    let y_max = paths
-        .iter()
-        .flat_map(|it| it.iter().map(|(_, y)| *y))
-        .max()
         .unwrap();
 
     let mut cavern = DMatrix::from_element(y_max + 1, x_max - x_min + 1, '.');
@@ -62,7 +69,6 @@ fn fall_sand(cavern: &mut Cavern, x_offset: usize) -> Result<(usize, usize), ()>
     'outer: loop {
         for x in [(0, 1), (-1, 1), (1, 1)].iter() {
             let new_pos = ((pos.0 as i32 + x.0) as usize, pos.1 + x.1);
-
             match cavern.get((new_pos.1, new_pos.0)) {
                 None => return Err(()), // we fall over the edge
                 Some('.') => {
@@ -72,13 +78,18 @@ fn fall_sand(cavern: &mut Cavern, x_offset: usize) -> Result<(usize, usize), ()>
                 _ => {}
             }
         }
+
+        if let Some('+') = cavern.get((pos.1, pos.0)) {
+            return Err(()); // we hit the source
+        }
+
         cavern[(pos.1, pos.0)] = 'O';
         return Ok(pos); // we found a place to rest
     }
 }
 
 fn part1(input: &str) {
-    let (mut cavern, x_offset) = parse_input(input);
+    let (mut cavern, x_offset) = parse_input(input, false);
 
     let mut sand_count = 0;
     while fall_sand(&mut cavern, x_offset).is_ok() {
@@ -89,8 +100,18 @@ fn part1(input: &str) {
     println!("Day 14 Part 1: {}", sand_count);
 }
 
-fn part2(input: &str) {}
+fn part2(input: &str) {
+    let (mut cavern, x_offset) = parse_input(input, true);
+
+    let mut sand_count = 0;
+    while fall_sand(&mut cavern, x_offset).is_ok() {
+        sand_count += 1;
+    }
+
+    println!("Day 14 Part 2: {}", sand_count + 1);
+}
 
 fn main() {
-    runner(part1)
+    runner(part1);
+    runner(part2);
 }
