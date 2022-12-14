@@ -1,5 +1,4 @@
 use adventofcode_2022::runner;
-use itertools::Itertools;
 use nalgebra::{DMatrix, Dynamic, Matrix, VecStorage};
 
 type Path = Vec<(usize, usize)>;
