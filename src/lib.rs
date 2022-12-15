@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 use std::{env, fs};
 use structopt::StructOpt;
 
@@ -37,7 +38,11 @@ pub fn runner(f: impl Fn(&str)) {
     let filepath = find_input_file(&opt).expect("Oh no! I couldn't find the input file :(");
 
     let input = fs::read_to_string(filepath).expect("Oh no! I couldn't read the file :(");
+    println!("---");
+    let start = Instant::now();
     f(&input);
+    let duration = start.elapsed();
+    println!("--- {:?}", duration)
 }
 #[derive(StructOpt)]
 struct Opt {
