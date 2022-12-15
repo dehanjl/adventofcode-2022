@@ -6,7 +6,6 @@ use std::{cmp::Ordering, ops::RangeInclusive};
 
 type Sensor = Loc;
 type Beacon = Loc;
-type MinMax = (i32, i32);
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 struct Loc {
@@ -36,26 +35,6 @@ fn range_join(a: &RangeInclusive<i32>, b: &RangeInclusive<i32>) -> Option<RangeI
         (_, Ordering::Less) => None,    // range a is before range b
         (_, _) => Some(*a.start().min(b.start())..=*a.end().max(b.end())), // there is some overlap, join them
     }
-}
-
-fn find_lims(sensors: &HashMap<Sensor, Beacon>) -> (MinMax, MinMax) {
-    let x_min_max = sensors
-        .keys()
-        .chain(sensors.values())
-        .map(|l| l.x)
-        .minmax()
-        .into_option()
-        .unwrap();
-
-    let y_min_max = sensors
-        .keys()
-        .chain(sensors.values())
-        .map(|l| l.y)
-        .minmax()
-        .into_option()
-        .unwrap();
-
-    (x_min_max, y_min_max)
 }
 
 fn parse_input(input: &str) -> (HashMap<Sensor, Beacon>, HashSet<Beacon>) {
@@ -123,11 +102,9 @@ fn part1(input: &str) {
         let (x_start, x_stop) = (s.x - offset, s.x + offset);
 
         ranges.push(x_start..=x_stop);
-        println!("{:?}", ranges);
     }
 
     compress_ranges(&mut ranges);
-    println!("{:?}", ranges);
 
     let mut res = ranges
         .iter()
@@ -139,8 +116,36 @@ fn part1(input: &str) {
     println!("Day 15 Part 1: {}", res);
 }
 
-fn part2(input: &str) {}
+fn part2(input: &str) {
+    let (t_min, t_max) = (0, if !is_real() { 20 } else { 4_000_000 });
+    let (sensors, beacons) = parse_input(input);
+
+    for target_row in t_min..=t_max {
+        let mut ranges: Vec<RangeInclusive<i32>> = vec![];
+        for (s, b) in sensors.iter() {
+            let offset = s.manhattan(&b) - s.y_dist(target_row);
+
+            if offset <= 0 {
+                continue; // sensor range does not reach target row
+            }
+
+            let (x_start, x_stop) = (s.x - offset, s.x + offset);
+
+            ranges.push(x_start..=x_stop);
+        }
+
+        compress_ranges(&mut ranges);
+
+        let mut res = ranges
+            .iter()
+            .map(|r| (r.end() - r.start()).abs() + 1)
+            .sum::<i32>();
+
+        res -= beacons.iter().filter(|&&b| b.y == target_row).count() as i32;
+    }
+}
 
 fn main() {
-    runner(part1)
+    runner(part1);
+    runner(part2);
 }
