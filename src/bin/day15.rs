@@ -101,6 +101,31 @@ fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
     }
 }
 
+fn compress_ranges_v2(ranges: &Vec<RangeInclusive<i64>>) -> Vec<RangeInclusive<i64>> {
+    ranges.iter().fold(vec![], |acc, it| {
+        println!("{:?} {:?}", acc, it);
+        if acc.len() < 1 {
+            vec![it.clone()]
+        } else {
+            let k = acc.iter().find_position(|r| range_join(r, it).is_some());
+            match k {
+                Some((u, _)) => acc
+                    .iter()
+                    .take(u)
+                    .chain(acc.iter().skip(u + 1))
+                    .chain(vec![range_join(&acc[u], it).unwrap()].iter())
+                    .cloned()
+                    .collect_vec(),
+                None => acc
+                    .iter()
+                    .chain(vec![it.clone()].iter())
+                    .cloned()
+                    .collect_vec(),
+            }
+        }
+    })
+}
+
 fn determine_ranges(
     sensors: &HashMap<Sensor, i64>,
     target_row: i64,
