@@ -70,10 +70,9 @@ fn parse_input(input: &str) -> (HashMap<Sensor, i64>, HashSet<Beacon>) {
 }
 
 fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
-    // TODO: Look into making this better using cartesian products, reduce and functional programming
     loop {
         if ranges.len() <= 1 {
-            break; // break if there no ranges to join
+            break; // break if there are no ranges to join
         }
 
         let mut altered = false;
@@ -96,34 +95,47 @@ fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
         }
 
         if !altered {
-            break; // break if we didn't join any loops
+            break; // break if we didn't join any ranges
         }
     }
 }
 
+/// Immutable variant of the above function. Is in fact significantly slower.
 fn compress_ranges_v2(ranges: &Vec<RangeInclusive<i64>>) -> Vec<RangeInclusive<i64>> {
-    ranges.iter().fold(vec![], |acc, it| {
-        println!("{:?} {:?}", acc, it);
-        if acc.len() < 1 {
-            vec![it.clone()]
-        } else {
-            let k = acc.iter().find_position(|r| range_join(r, it).is_some());
-            match k {
-                Some((u, _)) => acc
-                    .iter()
-                    .take(u)
-                    .chain(acc.iter().skip(u + 1))
-                    .chain(vec![range_join(&acc[u], it).unwrap()].iter())
-                    .cloned()
-                    .collect_vec(),
-                None => acc
-                    .iter()
-                    .chain(vec![it.clone()].iter())
-                    .cloned()
-                    .collect_vec(),
-            }
+    let mut ranges = ranges.to_vec();
+    loop {
+        if ranges.len() <= 1 {
+            return ranges; // return if there are no ranges to join
         }
-    })
+
+        let l = ranges.len();
+
+        ranges = ranges.iter().fold(vec![], |acc, it| {
+            if acc.len() < 1 {
+                vec![it.clone()]
+            } else {
+                let k = acc.iter().find_position(|r| range_join(r, it).is_some());
+                match k {
+                    Some((u, _)) => acc
+                        .iter()
+                        .take(u)
+                        .chain(acc.iter().skip(u + 1))
+                        .chain(vec![range_join(&acc[u], it).unwrap()].iter())
+                        .cloned()
+                        .collect_vec(),
+                    None => acc
+                        .iter()
+                        .chain(vec![it.clone()].iter())
+                        .cloned()
+                        .collect_vec(),
+                }
+            }
+        });
+
+        if ranges.len() == l {
+            return ranges; // return if no ranges were joined
+        }
+    }
 }
 
 fn determine_ranges(
