@@ -9,27 +9,27 @@ type Beacon = Loc;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 struct Loc {
-    x: i32,
-    y: i32,
+    x: i64,
+    y: i64,
 }
 
 impl Loc {
-    fn manhattan(&self, other: &Loc) -> i32 {
+    fn manhattan(&self, other: &Loc) -> i64 {
         self.x_dist(other.x) + self.y_dist(other.y)
     }
 
-    fn x_dist(&self, other_x: i32) -> i32 {
+    fn x_dist(&self, other_x: i64) -> i64 {
         (self.x - other_x).abs()
     }
 
-    fn y_dist(&self, other_y: i32) -> i32 {
+    fn y_dist(&self, other_y: i64) -> i64 {
         (self.y - other_y).abs()
     }
 }
 
 /// A function that takes two inclusive ranges, and joins them if they overlap.
 /// If they do not overlap, None is returned.
-fn range_join(a: &RangeInclusive<i32>, b: &RangeInclusive<i32>) -> Option<RangeInclusive<i32>> {
+fn range_join(a: &RangeInclusive<i64>, b: &RangeInclusive<i64>) -> Option<RangeInclusive<i64>> {
     match (a.start().cmp(b.end()), a.end().cmp(b.start())) {
         (Ordering::Greater, _) => None, // range a is after range b
         (_, Ordering::Less) => None,    // range a is before range b
@@ -37,37 +37,43 @@ fn range_join(a: &RangeInclusive<i32>, b: &RangeInclusive<i32>) -> Option<RangeI
     }
 }
 
-fn parse_input(input: &str) -> (HashMap<Sensor, Beacon>, HashSet<Beacon>) {
+fn parse_input(input: &str) -> (HashMap<Sensor, i64>, HashSet<Beacon>) {
+    let mut beacons: HashSet<Beacon> = HashSet::new();
     let sensors = input
         .lines()
         .map(|line| {
             let (sx, sy, bx, by) = scan_fmt!(
                 line,
                 "Sensor at x={}, y={}: closest beacon is at x={}, y={}",
-                i32,
-                i32,
-                i32,
-                i32
+                i64,
+                i64,
+                i64,
+                i64
             )
             .unwrap();
 
-            (Loc { x: sx, y: sy }, Loc { x: bx, y: by })
+            let s = Loc { x: sx, y: sy };
+            let b = Loc { x: bx, y: by };
+            let d = s.manhattan(&b);
+
+            beacons.insert(b);
+
+            (s, d)
         })
         .collect::<HashMap<_, _>>();
-
-    let beacons = sensors
-        .values()
-        .map(|l| l.to_owned())
-        .collect::<HashSet<_>>();
 
     (sensors, beacons)
 }
 
-fn compress_ranges(ranges: &mut Vec<RangeInclusive<i32>>) {
-    let mut join_count = -1;
-    while join_count != 0 {
-        join_count = 0;
-        loop {
+fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
+    // TODO: Look into making this better using cartesian products, reduce and functional programming
+    loop {
+        if ranges.len() <= 1 {
+            break; // break if there no ranges to join
+        }
+
+        let mut altered = false;
+        for _ in 0..ranges.len() {
             let a = ranges.remove(0); // take out a
             let rc = ranges.clone();
             let f = rc.iter().find_position(|b| range_join(&a, b).is_some());
@@ -76,73 +82,95 @@ fn compress_ranges(ranges: &mut Vec<RangeInclusive<i32>>) {
                 Some((u, b)) => {
                     ranges.remove(u); // take out b
                     ranges.push(range_join(&a, b).unwrap()); // put in the new range
-                    join_count += 1;
+                    altered = true;
+                    break;
                 }
                 None => {
                     ranges.push(a); // found no ranges that could be joined with a, put it back
-                    break;
                 }
             }
         }
+
+        if !altered {
+            break; // break if we didn't join any loops
+        }
     }
+}
+
+fn determine_ranges(sensors: &HashMap<Sensor, i64>, target_row: i64) -> Vec<RangeInclusive<i64>> {
+    sensors
+        .iter()
+        .filter_map(|(s, d)| {
+            let offset = d - s.y_dist(target_row);
+            if offset > 0 {
+                Some((s.x - offset)..=(s.x + offset))
+            } else {
+                None
+            }
+        })
+        .collect()
 }
 
 fn part1(input: &str) {
     let target_row = if !is_real() { 10 } else { 2_000_000 };
     let (sensors, beacons) = parse_input(input);
 
-    let mut ranges: Vec<RangeInclusive<i32>> = vec![];
-    for (s, b) in sensors {
-        let offset = s.manhattan(&b) - s.y_dist(target_row);
-
-        if offset <= 0 {
-            continue; // sensor range does not reach target row
-        }
-
-        let (x_start, x_stop) = (s.x - offset, s.x + offset);
-
-        ranges.push(x_start..=x_stop);
-    }
-
+    let mut ranges = determine_ranges(&sensors, target_row);
     compress_ranges(&mut ranges);
 
     let mut res = ranges
         .iter()
         .map(|r| (r.end() - r.start()).abs() + 1)
-        .sum::<i32>();
+        .sum::<i64>();
 
-    res -= beacons.iter().filter(|&&b| b.y == target_row).count() as i32;
+    res -= beacons.iter().filter(|&&b| b.y == target_row).count() as i64;
 
     println!("Day 15 Part 1: {}", res);
 }
 
 fn part2(input: &str) {
     let (t_min, t_max) = (0, if !is_real() { 20 } else { 4_000_000 });
-    let (sensors, beacons) = parse_input(input);
+    let (sensors, _) = parse_input(input);
 
-    for target_row in t_min..=t_max {
-        let mut ranges: Vec<RangeInclusive<i32>> = vec![];
-        for (s, b) in sensors.iter() {
-            let offset = s.manhattan(&b) - s.y_dist(target_row);
+    let (y, _, r) = (t_min..=t_max)
+        .map(|target_row| {
+            let mut ranges = determine_ranges(&sensors, target_row);
+            compress_ranges(&mut ranges);
+            (target_row, ranges)
+        })
+        .map(|(row, ranges)| {
+            let neg_diff = ranges
+                .iter()
+                .map(|r| r.start())
+                .min()
+                .unwrap()
+                .abs_diff(t_min) as i64;
 
-            if offset <= 0 {
-                continue; // sensor range does not reach target row
-            }
+            let pos_diff = ranges
+                .iter()
+                .map(|r| r.end())
+                .max()
+                .unwrap()
+                .abs_diff(t_max) as i64;
 
-            let (x_start, x_stop) = (s.x - offset, s.x + offset);
+            let size = ranges
+                .iter()
+                .map(|r| (r.end() - r.start()).abs() + 1)
+                .sum::<i64>();
 
-            ranges.push(x_start..=x_stop);
-        }
+            (row, size - pos_diff - neg_diff - 1, ranges)
+        })
+        .find(|(_, s, _)| *s < t_max)
+        .unwrap();
 
-        compress_ranges(&mut ranges);
+    // TODO: Make this less bad
+    let x = (t_min..=t_max)
+        .find(|x| !r.iter().any(|r| r.contains(x)))
+        .unwrap();
 
-        let mut res = ranges
-            .iter()
-            .map(|r| (r.end() - r.start()).abs() + 1)
-            .sum::<i32>();
+    let res = x * 4_000_000 + y;
 
-        res -= beacons.iter().filter(|&&b| b.y == target_row).count() as i32;
-    }
+    println!("Day 15 Part 2: {} (x={}, y={})", res, x, y);
 }
 
 fn main() {
