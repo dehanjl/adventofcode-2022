@@ -44,3 +44,8 @@ struct Opt {
     #[structopt(short, long)]
     real: bool,
 }
+
+pub fn is_real() -> bool {
+    let opt = Opt::from_args();
+    opt.real
+}
