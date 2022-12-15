@@ -2,7 +2,11 @@ use adventofcode_2022::{is_real, runner};
 use hashbrown::{HashMap, HashSet};
 use itertools::Itertools;
 use scan_fmt::scan_fmt;
-use std::{cmp::Ordering, ops::RangeInclusive};
+use std::{
+    cmp::Ordering,
+    i64::{MAX, MIN},
+    ops::RangeInclusive,
+};
 
 type Sensor = Loc;
 type Beacon = Loc;
@@ -97,13 +101,18 @@ fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
     }
 }
 
-fn determine_ranges(sensors: &HashMap<Sensor, i64>, target_row: i64) -> Vec<RangeInclusive<i64>> {
+fn determine_ranges(
+    sensors: &HashMap<Sensor, i64>,
+    target_row: i64,
+    mn: i64,
+    mx: i64,
+) -> Vec<RangeInclusive<i64>> {
     sensors
         .iter()
         .filter_map(|(s, d)| {
             let offset = d - s.y_dist(target_row);
             if offset > 0 {
-                Some((s.x - offset)..=(s.x + offset))
+                Some((s.x - offset).max(mn)..=(s.x + offset).min(mx))
             } else {
                 None
             }
@@ -115,7 +124,7 @@ fn part1(input: &str) {
     let target_row = if !is_real() { 10 } else { 2_000_000 };
     let (sensors, beacons) = parse_input(input);
 
-    let mut ranges = determine_ranges(&sensors, target_row);
+    let mut ranges = determine_ranges(&sensors, target_row, MIN, MAX);
     compress_ranges(&mut ranges);
 
     let mut res = ranges
@@ -132,33 +141,20 @@ fn part2(input: &str) {
     let (t_min, t_max) = (0, if !is_real() { 20 } else { 4_000_000 });
     let (sensors, _) = parse_input(input);
 
+    // TODO: Invert this by iterating through sensors first
     let (y, _, r) = (t_min..=t_max)
         .map(|target_row| {
-            let mut ranges = determine_ranges(&sensors, target_row);
+            let mut ranges = determine_ranges(&sensors, target_row, t_min, t_max);
             compress_ranges(&mut ranges);
             (target_row, ranges)
         })
         .map(|(row, ranges)| {
-            let neg_diff = ranges
-                .iter()
-                .map(|r| r.start())
-                .min()
-                .unwrap()
-                .abs_diff(t_min) as i64;
-
-            let pos_diff = ranges
-                .iter()
-                .map(|r| r.end())
-                .max()
-                .unwrap()
-                .abs_diff(t_max) as i64;
-
             let size = ranges
                 .iter()
                 .map(|r| (r.end() - r.start()).abs() + 1)
                 .sum::<i64>();
 
-            (row, size - pos_diff - neg_diff - 1, ranges)
+            (row, size - 1, ranges)
         })
         .find(|(_, s, _)| *s < t_max)
         .unwrap();
