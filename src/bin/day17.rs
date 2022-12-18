@@ -171,11 +171,9 @@ fn display_board(board: &Board, shape: &Shape) {
 fn part1(input: &str) {
     let jet_stream = parse_input(input);
     let mut board: Board = vec![vec![false; WIDTH]; 0].into();
+
     let mut move_count = 0;
-    let max = 1_000_000;
-    let bar = ProgressBar::new(max as u64);
-    for i in 0..max {
-        bar.inc(1);
+    for i in 0..2022 {
         let mut shape = Shape::new(SHAPE_ORDER[i % 5]);
         board.trim_space();
         board.inject_space(shape.lines_required());
@@ -204,16 +202,11 @@ fn part1(input: &str) {
             }
         } {}
     }
-    bar.finish();
     board.trim_space();
     println!("Day 17 Part 1: {}", board.len());
 }
 
-fn part2(input: &str) {
-    //a - 156524182
-    //b - 1565201
-    //15652418
-}
+fn part2(input: &str) {}
 
 fn main() {
     runner(part1);
