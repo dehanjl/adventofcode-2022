@@ -101,7 +101,7 @@ fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
 }
 
 /// Immutable variant of the above function. Is in fact significantly slower.
-fn compress_ranges_v2(ranges: &Vec<RangeInclusive<i64>>) -> Vec<RangeInclusive<i64>> {
+fn _compress_ranges_v2(ranges: &Vec<RangeInclusive<i64>>) -> Vec<RangeInclusive<i64>> {
     let mut ranges = ranges.to_vec();
     loop {
         if ranges.len() <= 1 {

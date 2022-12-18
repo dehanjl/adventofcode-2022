@@ -1,7 +1,6 @@
 use std::collections::VecDeque;
 
 use adventofcode_2022::runner;
-use indicatif::ProgressBar;
 
 const WIDTH: usize = 7;
 const SHAPE_ORDER: [ShapeType; 5] = [
@@ -148,7 +147,7 @@ fn parse_input(input: &str) -> Vec<MoveDirection> {
         .collect()
 }
 
-fn display_board(board: &Board, shape: &Shape) {
+fn _display_board(board: &Board, shape: &Shape) {
     for (y, row) in board.iter().enumerate() {
         print!("|");
         for (x, cell) in row.iter().enumerate() {
@@ -206,7 +205,7 @@ fn part1(input: &str) {
     println!("Day 17 Part 1: {}", board.len());
 }
 
-fn part2(input: &str) {}
+fn _part2(_input: &str) {}
 
 fn main() {
     runner(part1);
