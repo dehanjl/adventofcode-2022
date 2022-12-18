@@ -206,7 +206,10 @@ fn part1(input: &str) {
     println!("Day 17 Part 1: {}", board.len());
 }
 
-fn _part2(_input: &str) {}
+fn _part2(_input: &str) {
+    // TODO: Look into finding a pattern in the board
+    // I suspect I have to found how often a "floor" is added
+}
 
 fn main() {
     runner(part1);
