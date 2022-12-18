@@ -147,7 +147,7 @@ fn parse_input(input: &str) -> Vec<MoveDirection> {
         .collect()
 }
 
-fn _display_board(board: &Board, shape: &Shape) {
+fn _display_board(board: &Board, shape: Option<&Shape>) {
     for (y, row) in board.iter().enumerate() {
         print!("|");
         for (x, cell) in row.iter().enumerate() {
@@ -155,7 +155,7 @@ fn _display_board(board: &Board, shape: &Shape) {
                 "{}",
                 if *cell {
                     '#'
-                } else if shape.positions.contains(&(x, y)) {
+                } else if shape.is_some() && shape.unwrap().positions.contains(&(x, y)) {
                     '@'
                 } else {
                     '.'
@@ -178,15 +178,15 @@ fn part1(input: &str) {
         board.inject_space(shape.lines_required());
 
         while {
-            let move_dir;
-            if move_count % 2 == 0 {
-                move_dir = jet_stream[(move_count / 2) % jet_stream.len()];
+            let move_dir = if move_count % 2 == 0 {
+                jet_stream[(move_count / 2) % jet_stream.len()]
             } else {
-                move_dir = MoveDirection::Down;
-            }
+                MoveDirection::Down
+            };
+
             move_count += 1;
-            let res = shape.relocate(move_dir, &board);
-            match res {
+
+            match shape.relocate(move_dir, &board) {
                 Ok(new_shape) => {
                     shape = new_shape;
                     true
@@ -202,6 +202,7 @@ fn part1(input: &str) {
         } {}
     }
     board.trim_space();
+
     println!("Day 17 Part 1: {}", board.len());
 }
 
