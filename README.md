@@ -4,11 +4,6 @@ A (mostly) Rust 🦀 set of solutions to the [Advent of Code](https://adventofco
 ## Instructions
 Run a day using `cargo run --bin <day>` to run an unoptimized build with example input. Run a day using `cargo run --release --bin <day> -- --real`.
 
-## TODOs
-- Day 2 - 12: Refactor
-- Day 16: Part 1 & 2
-- Day 17: Part 2
-
 ## Folder Structure
 ```
 .
