@@ -21,7 +21,8 @@ Run a day using `cargo run --bin <day>` to run an unoptimized build with example
     └── main.rs # main project binary, does nothing right now
 ```
 
-## Acknowledgements
+## Helpful Resources
+- A wonderful [series of articles](https://fasterthanli.me/series/advent-of-code-2022) explaing Rust 🦀 using Advent of Code by [@fasterthanlime](https://github.com/fasterthanlime)
 - For some genuinely impressive solutions: [@AxlLind](https://github.com/AxlLind/AdventOfCode2022)
 - Some more and pretty good solutions: [@jontmy](https://github.com/jontmy/aoc-rust)
 - Another good set of solutions: [@Ummon](https://github.com/Ummon/AdventOfCode2022)
