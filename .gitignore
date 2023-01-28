@@ -12,3 +12,6 @@ Cargo.lock
 # Input files, these should not be shared
 input.txt
 inputs/real/day*.txt
+
+# MacOS DS Store file
+.DS_Store
