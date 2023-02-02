@@ -1,11 +1,11 @@
 use std::env::{self, VarError};
 use std::error::Error;
+use std::path::{Path, PathBuf};
 
-use reqwest;
 use reqwest::header::COOKIE;
 
 fn main() {
-    match fetch_input(2022, 1) {
+    match download_input(2022, 1) {
         Ok(resp) => println!("{resp}"),
         Err(err) => panic!("Error: {err}"),
     }
@@ -19,7 +19,7 @@ fn get_session_token() -> Result<String, VarError> {
     env::var("AOC_SESSION")
 }
 
-fn fetch_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
+fn download_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
     let client = reqwest::blocking::Client::new();
     client
         .get(make_url(year, day))
