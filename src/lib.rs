@@ -7,6 +7,29 @@ use structopt::StructOpt;
 
 use reqwest::header::COOKIE;
 
+#[derive(StructOpt)]
+struct Opt {
+    #[structopt(short, long)]
+    real: bool,
+}
+
+pub fn is_real() -> bool {
+    let opt = Opt::from_args();
+    opt.real
+}
+
+pub fn runner(f: impl Fn(&str)) {
+    let opt = Opt::from_args();
+
+    let input = get_input(&opt);
+
+    println!("---");
+    let start = Instant::now();
+    f(&input);
+    let duration = start.elapsed();
+    println!("--- {duration:?}")
+}
+
 /// This function panics when something goes wrong. That is intended behaviour.
 fn get_input(opt: &Opt) -> String {
     let bin = binary_name();
@@ -22,16 +45,6 @@ fn get_input(opt: &Opt) -> String {
         (false, true) => download_and_save(path, day),
     }
     .unwrap()
-}
-
-/// This function may cause a path error when the "inputs/real" directory doesn't exist.
-/// The workaround is to create the directory manually.
-fn download_and_save(path: PathBuf, day: u8) -> Result<String, Box<dyn Error>> {
-    let resp = download_input(2022, day)?;
-    match fs::write(path, resp.as_bytes()).map_err(|err| Box::new(err) as Box<dyn Error>) {
-        Ok(_) => Ok(resp),
-        Err(err) => Err(err),
-    }
 }
 
 fn binary_name() -> String {
@@ -56,12 +69,14 @@ fn make_path(bin_name: &str, opt: &Opt) -> PathBuf {
     path
 }
 
-fn make_url(year: u16, day: u8) -> String {
-    format!("https://adventofcode.com/{year}/day/{day}/input")
-}
-
-fn get_session_token() -> Result<String, VarError> {
-    env::var("AOC_SESSION")
+/// This function may cause a path error when the "inputs/real" directory doesn't exist.
+/// The workaround is to create the directory manually.
+fn download_and_save(path: PathBuf, day: u8) -> Result<String, Box<dyn Error>> {
+    let resp = download_input(2022, day)?;
+    match fs::write(path, resp.as_bytes()).map_err(|err| Box::new(err) as Box<dyn Error>) {
+        Ok(_) => Ok(resp),
+        Err(err) => Err(err),
+    }
 }
 
 fn download_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
@@ -77,24 +92,10 @@ fn download_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
         .map_err(|err| Box::new(err) as Box<dyn Error>)
 }
 
-pub fn runner(f: impl Fn(&str)) {
-    let opt = Opt::from_args();
-
-    let input = get_input(&opt);
-
-    println!("---");
-    let start = Instant::now();
-    f(&input);
-    let duration = start.elapsed();
-    println!("--- {duration:?}")
-}
-#[derive(StructOpt)]
-struct Opt {
-    #[structopt(short, long)]
-    real: bool,
+fn make_url(year: u16, day: u8) -> String {
+    format!("https://adventofcode.com/{year}/day/{day}/input")
 }
 
-pub fn is_real() -> bool {
-    let opt = Opt::from_args();
-    opt.real
+fn get_session_token() -> Result<String, VarError> {
+    env::var("AOC_SESSION")
 }
