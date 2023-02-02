@@ -7,64 +7,53 @@ use structopt::StructOpt;
 
 use reqwest::header::COOKIE;
 
+/// This function panics when something goes wrong. That is intended behaviour.
 fn get_input(opt: &Opt) -> String {
-    // find the name of the binary
-    let bin = env::args()
+    let bin = binary_name();
+    let day = bin
+        .strip_prefix("day")
+        .and_then(|b| b.parse::<u8>().ok())
+        .unwrap();
+
+    let path = make_path(&bin, opt);
+    match (path.exists(), opt.real) {
+        (true, _) => fs::read_to_string(path).map_err(|err| Box::new(err) as Box<dyn Error>),
+        (false, false) => panic!("Oh no! I couldn't find the example input file :("),
+        (false, true) => download_and_save(path, day),
+    }
+    .unwrap()
+}
+
+/// This function may cause a path error when the "inputs/real" directory doesn't exist.
+/// The workaround is to create the directory manually.
+fn download_and_save(path: PathBuf, day: u8) -> Result<String, Box<dyn Error>> {
+    let resp = download_input(2022, day)?;
+    match fs::write(path, resp.as_bytes()).map_err(|err| Box::new(err) as Box<dyn Error>) {
+        Ok(_) => Ok(resp),
+        Err(err) => Err(err),
+    }
+}
+
+fn binary_name() -> String {
+    env::args()
         .next()
         .as_ref()
         .map(Path::new)
         .and_then(Path::file_name)
         .and_then(std::ffi::OsStr::to_str)
-        .map(String::from);
-
-    // and the day number from it
-    let day_num = bin
-        .and_then(|b| b.strip_prefix("day").map(String::from))
-        .and_then(|b| b.parse::<u8>().ok());
-
-    // try and read cached or example input
-    let filepath = find_file(&opt);
-
-    let x = match (filepath, opt.real) {
-        (Some(filepath), _) => fs::read_to_string(filepath),
-        (None, false) => panic!("Oh no! I couldn't find the example input file :("),
-        (None, true) => {
-            match day_num
-                .map(|day_num| download_input(2022, day_num))
-                .expect("Oh no! I couldn't download the input :(")
-            {
-                Ok(resp) => Ok(resp),
-                Err(err) => err,
-            }
-        }
-    };
-
-    String::from("not there yet")
+        .map(String::from)
+        .expect("Couldn't find the binary name for some reason...")
 }
 
-fn find_file(opt: &Opt) -> Option<PathBuf> {
+fn make_path(bin_name: &str, opt: &Opt) -> PathBuf {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
     path.push("inputs");
     path.push(if opt.real { "real" } else { "example" });
+    path.push(bin_name);
+    path.set_extension("txt");
 
-    let bin = env::args()
-        .next()
-        .as_ref()
-        .map(Path::new)
-        .and_then(Path::file_name)
-        .and_then(std::ffi::OsStr::to_str)
-        .map(String::from);
-
-    if let Some(bin) = bin {
-        path.push(bin);
-        path.set_extension("txt");
-        if path.exists() {
-            return Some(path);
-        }
-    }
-
-    None
+    path
 }
 
 fn make_url(year: u16, day: u8) -> String {
@@ -91,11 +80,13 @@ fn download_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
 pub fn runner(f: impl Fn(&str)) {
     let opt = Opt::from_args();
 
+    let input = get_input(&opt);
+
     println!("---");
     let start = Instant::now();
     f(&input);
     let duration = start.elapsed();
-    println!("--- {:?}", duration)
+    println!("--- {duration:?}")
 }
 #[derive(StructOpt)]
 struct Opt {
