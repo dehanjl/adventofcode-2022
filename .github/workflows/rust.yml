@@ -1,0 +1,22 @@
+name: Check & Format
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+  
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Format
+      run: cargo fmt
+    - name: Clippy
+      run: cargo clippy --no-deps --fix
