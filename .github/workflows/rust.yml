@@ -12,7 +12,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  Format and Clippy Fix:
+  Format_and_Clippy_Fix:
 
     runs-on: ubuntu-latest
 
