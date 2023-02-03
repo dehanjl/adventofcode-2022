@@ -3,6 +3,8 @@ name: Check & Format
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
   
 
@@ -10,13 +12,17 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  Format and Clippy Fix:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Format
+    - name: rustmt
       run: cargo fmt
-    - name: Clippy
+    - name: clippy fix
       run: cargo clippy --no-deps --fix
+    - name: Git Auto Commit
+      uses: stefanzweifel/git-auto-commit-action@v4.16.0
+      with:
+        commit_message: Apply rustfmt and clippy fix
