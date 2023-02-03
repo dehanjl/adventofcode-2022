@@ -73,10 +73,8 @@ fn make_path(bin_name: &str, opt: &Opt) -> PathBuf {
 /// The workaround is to create the directory manually.
 fn download_and_save(path: PathBuf, day: u8) -> Result<String, Box<dyn Error>> {
     let resp = download_input(2022, day)?;
-    match fs::write(path, resp.as_bytes()).map_err(|err| Box::new(err) as Box<dyn Error>) {
-        Ok(_) => Ok(resp),
-        Err(err) => Err(err),
-    }
+    fs::write(path, resp.as_bytes()).map_err(|err| Box::new(err) as Box<dyn Error>)?;
+    Ok(resp)
 }
 
 fn download_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
