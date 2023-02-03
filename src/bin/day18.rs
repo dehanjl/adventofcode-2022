@@ -32,7 +32,7 @@ fn part1(input: &str) {
         .filter(|s| !drops.contains(s))
         .count();
 
-    println!("Day 18 Part 1: {}", surface_area);
+    println!("Day 18 Part 1: {surface_area}");
 }
 
 fn part2(input: &str) {
@@ -60,7 +60,7 @@ fn part2(input: &str) {
         .filter(|s| steam.contains(s))
         .count();
 
-    println!("Day 18 Part 2: {}", surface_area);
+    println!("Day 18 Part 2: {surface_area}");
 }
 
 fn main() {

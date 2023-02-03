@@ -95,8 +95,8 @@ fn part1(input: &str) {
         sand_count += 1;
     }
 
-    println!("{}", cavern);
-    println!("Day 14 Part 1: {}", sand_count);
+    println!("{cavern}");
+    println!("Day 14 Part 1: {sand_count}");
 }
 
 fn part2(input: &str) {

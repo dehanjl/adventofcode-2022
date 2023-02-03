@@ -101,7 +101,7 @@ fn compress_ranges(ranges: &mut Vec<RangeInclusive<i64>>) {
 }
 
 /// Immutable variant of the above function. Is in fact significantly slower.
-fn _compress_ranges_v2(ranges: &Vec<RangeInclusive<i64>>) -> Vec<RangeInclusive<i64>> {
+fn _compress_ranges_v2(ranges: &[RangeInclusive<i64>]) -> Vec<RangeInclusive<i64>> {
     let mut ranges = ranges.to_vec();
     loop {
         if ranges.len() <= 1 {
@@ -111,7 +111,7 @@ fn _compress_ranges_v2(ranges: &Vec<RangeInclusive<i64>>) -> Vec<RangeInclusive<
         let l = ranges.len();
 
         ranges = ranges.iter().fold(vec![], |acc, it| {
-            if acc.len() < 1 {
+            if acc.is_empty() {
                 vec![it.clone()]
             } else {
                 let k = acc.iter().find_position(|r| range_join(r, it).is_some());
@@ -171,7 +171,7 @@ fn part1(input: &str) {
 
     res -= beacons.iter().filter(|&&b| b.y == target_row).count() as i64;
 
-    println!("Day 15 Part 1: {}", res);
+    println!("Day 15 Part 1: {res}");
 }
 
 fn part2(input: &str) {
@@ -203,7 +203,7 @@ fn part2(input: &str) {
 
     let res = x * 4_000_000 + y;
 
-    println!("Day 15 Part 2: {} (x={}, y={})", res, x, y);
+    println!("Day 15 Part 2: {res} (x={x}, y={y})");
 }
 
 fn main() {

@@ -45,7 +45,7 @@ fn part1(input: &str) {
         .map(|i| i + 1)
         .sum::<usize>();
 
-    println!("Day 13 Part 1: {:?}", res);
+    println!("Day 13 Part 1: {res:?}");
 }
 
 fn part2(input: &str) {
@@ -63,7 +63,7 @@ fn part2(input: &str) {
         .map(|i| i + 1)
         .product::<usize>();
 
-    println!("Day 13 Part 2: {:?}", res);
+    println!("Day 13 Part 2: {res:?}");
 }
 
 fn main() {

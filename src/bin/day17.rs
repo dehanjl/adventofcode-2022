@@ -99,13 +99,10 @@ impl Shape {
                     Ok((x + 1, *y))
                 }
             })
-            .collect::<Result<Vec<_>, MoveError>>()
-            .and_then(|new_pos| {
-                Ok(Shape {
+            .collect::<Result<Vec<_>, MoveError>>().map(|new_pos| Shape {
                     shape_type: self.shape_type,
                     positions: new_pos,
                 })
-            })
     }
 }
 
