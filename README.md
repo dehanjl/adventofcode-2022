@@ -4,6 +4,12 @@ A (mostly) Rust 🦀 set of solutions to the [Advent of Code](https://adventofco
 ## Instructions
 Run a day using `cargo run --bin <day>` to run an unoptimized build with example input. Run a day using `cargo run --release --bin <day> -- --real`.
 
+The runner expects that the example input has been provided. It will try to automatically the download the real input. Add the `AOC_SESSION` environment variable using:
+```bash
+export AOC_SESSION=<your session cookie> #Unix
+```
+
+
 ## Folder Structure
 ```
 .
