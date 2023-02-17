@@ -1,26 +1,20 @@
-use std::{
-    collections::HashSet,
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use adventofcode_2022::runner;
+use hashbrown::HashSet;
+use itertools::Itertools;
 
-fn read_input(filename: &str) -> Vec<Vec<u32>> {
-    let file = File::open(filename).unwrap();
-    let reader = BufReader::new(file);
-
-    reader
+fn parse_input(input: &str) -> Vec<Vec<u32>> {
+    input
         .lines()
         .map(|line| {
-            line.unwrap()
-                .chars()
+            line.chars()
                 .map(|c| ('a'..='z').chain('A'..='Z').position(|x| x == c).unwrap() as u32 + 1)
                 .collect()
         })
         .collect()
 }
 
-fn part1() {
-    let res: u32 = read_input("input.txt")
+fn part1(input: &str) {
+    let res: u32 = parse_input(input)
         .iter()
         .map(|v| v.split_at(v.len() / 2))
         .map(|t| {
@@ -31,19 +25,15 @@ fn part1() {
         })
         .fold(0, |acc, (x, y)| acc + x.intersection(&y).sum::<u32>());
 
-    println!("Part 1: {}", res);
+    println!("Day 3 Part 1: {res}");
 }
 
-fn part2() {
-    let res = read_input("input.txt")
-        .chunks(3)
-        .map(|v| {
-            (
-                v[0].iter().cloned().collect::<HashSet<_>>(),
-                v[1].iter().cloned().collect::<HashSet<_>>(),
-                v[2].iter().cloned().collect::<HashSet<_>>(),
-            )
-        })
+fn part2(input: &str) {
+    let res = parse_input(input)
+        .iter()
+        .map(|v| HashSet::from_iter(v.iter().cloned()))
+        .into_iter()
+        .tuples()
         .fold(0, |acc, (x, y, z)| {
             acc + x
                 .intersection(&y)
@@ -53,10 +43,10 @@ fn part2() {
                 .sum::<u32>()
         });
 
-    println!("Part 2: {}", res);
+    println!("Day 3 Part 2: {res}");
 }
 
 fn main() {
-    part1();
-    part2();
+    runner(part1);
+    runner(part2);
 }
